@@ -7,4 +7,4 @@ Enjoy the convenience of swiftly adding or removing servers from your list, all 
 
 ---
 
-To install simply add the ServerSelector.exe to your MPT root folder
+To install simply add the ServerSelector.exe to your SPT root folder
