@@ -1,0 +1,16 @@
+{
+  "FirstRun": false,
+  "DefaultLocale": "English",
+  "LauncherStartGameAction": 0,
+  "UseAutoLogin": true,
+  "GamePath": "D:\\MPT TestGrounds",
+  "ExcludeFromCleanup": [],
+  "Server": {
+    "AutoLoginCreds": {
+      "Username": "Krackasourus",
+      "Password": ""
+    },
+    "Name": "Muninn",
+    "Url": "http://98.40.176.239:6969"
+  }
+}
