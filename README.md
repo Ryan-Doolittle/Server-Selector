@@ -1,4 +1,5 @@
-![image](https://github.com/Ryan-Doolittle/Server-Selector/assets/165734671/3ea00e10-42db-496e-801f-3f142558f4a8)
+![image](https://github.com/Ryan-Doolittle/Server-Selector/assets/165734671/3bf7bc39-13f1-4ce7-ba62-c074911c6c72)
+
 # About ServerSelector
 
 ## What is ServerSelector?
@@ -14,7 +15,7 @@ ServerSelector is a user-friendly tool designed to help users visually identify 
 ---
 
 ## Check Latest Release
-[v0.2.0](https://github.com/Ryan-Doolittle/Server-Selector/releases/tag/v0.2.0)
+[v0.3.0](https://github.com/Ryan-Doolittle/Server-Selector/releases/tag/v0.3.0)
 
 ---
 
