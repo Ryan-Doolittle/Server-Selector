@@ -1,27 +1,20 @@
+import socket
 from PyQt5.QtCore import QObject, pyqtSignal
-import asyncio
 
 class ServerCheckWorker(QObject):
     finished = pyqtSignal(bool)
 
-    def __init__(self, address, port):
+    def __init__(self, ip, port=6969):
         super().__init__()
-        self.address = address
+        self.ip = ip
         self.port = port
 
     def run(self):
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(self.check_async())
-        loop.close()
-        self.finished.emit(result)
-
-    async def check_async(self):
-        try:
-            reader, writer = await asyncio.open_connection(self.address, self.port)
-            writer.close()
-            await writer.wait_closed()
-            return True
-        except Exception as e:
-            print(f"Failed to connect: {e}")
-            return False
+        print(f"Attempting to connect to {self.ip}:{self.port}")
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex((self.ip, self.port))
+        sock.close()
+        is_online = (result == 0)
+        print(f"Connection result for {self.ip}: {'online' if is_online else 'offline'}")
+        self.finished.emit(is_online)

@@ -1,10 +1,8 @@
-import socket
-import sys
 import json
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt, QThread
+import socket
+from PyQt5.QtWidgets import QPushButton, QMessageBox, QMenu, QDialog
+from PyQt5.QtCore import QTimer, QThread, Qt
 from PyQt5.QtGui import QFont
-from PyQt5.QtGui import QIcon
 import qdarktheme
 
 from ..utilities.worker import ServerCheckWorker
@@ -12,79 +10,93 @@ from ..utilities.worker import ServerCheckWorker
 from ..containers.edit_server import EditServerDialog
 
 
+
 class ServerButton(QPushButton):
-    def __init__(self, name, ip, parent=None):
+    def __init__(self, name, ip, server_selector, parent=None):
         super().__init__(name, parent)
-        stylesheet = qdarktheme.load_stylesheet(theme="dark")
-        QApplication.instance().setStyleSheet(stylesheet)
         self.name = name
         self.ip = ip
-        self.thread = None
-        self.parent = parent
+        self.server_selector = server_selector
         self.setFont(QFont('Arial', 20))
         self.setMinimumHeight(100)
-        self.initUI()
+        self.active_thread = None
 
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.launch_thread)
+        self.timer.start(10000)
 
-    def initUI(self):
-        self.setStyleSheet("QPushButton {background-color: #FF6347; color: white;}")
-        self.check_status()
+    def launch_thread(self):
+        def check_status():
+            print(f"Checking status for: {self.ip}")
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex((self.ip, 6969))
+            sock.close()
+            self.update_button_color(result == 0)
 
-
-    def check_status(self):
-        if self.thread and self.thread.isRunning():
-            self.thread.quit()
-            self.thread.wait()
-
-        self.setup_thread()
-
-
-    def setup_thread(self):
-        self.thread = QThread()
-        self.worker = ServerCheckWorker(self.ip, 6969)
-        self.worker.moveToThread(self.thread)
-
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.update_button_color)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-
-        self.thread.start()
-
+        QTimer.singleShot(0, check_status)
 
     def update_button_color(self, is_online):
         color = "#4CAF50" if is_online else "#FF6347"
-        self.setStyleSheet(f"QPushButton {{background-color: {color}; color: white;}}")
+        print(f"Updating color for {self.ip}: {color}")
+        self.setStyleSheet(f"QPushButton {{background-color: {color} !important; color: white;}}")
+        self.style().unpolish(self)
+        self.style().polish(self)
+        self.update()
 
+    def cleanup_thread(self):
+        print(f"Cleaning up thread for {self.ip}")
+        self.active_thread = None
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.RightButton:
+        if event.button() == Qt.LeftButton:
+            self.modify_server_ip()
+        elif event.button() == Qt.RightButton:
             self.show_context_menu(event.pos())
         else:
             super().mousePressEvent(event)
 
+    def modify_server_ip(self):
+        """Modify the server IP in the config file."""
+        config_path = "user/launcher/config.json"  # Adjust path as necessary
+        try:
+            with open(config_path, 'r') as file:
+                config = json.load(file)
+            config['Server']['Name'] = self.name
+            config['Server']['Url'] = f"http://{self.ip}:6969"
+            
+            with open(config_path, 'w') as file:
+                json.dump(config, file, indent=4)
+                
+            print(f"Updated config.json with {self.name} IP {self.ip}")
+        except FileNotFoundError:
+            print(f"Config file not found at {config_path}")
+        except json.JSONDecodeError:
+            print("Error decoding JSON from config file.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
     def show_context_menu(self, pos):
-        menu = QMenu()
+        menu = QMenu(self)
         edit_action = menu.addAction("Edit")
         delete_action = menu.addAction("Delete")
-        
+
         action = menu.exec_(self.mapToGlobal(pos))
         if action == edit_action:
             self.edit_server()
         elif action == delete_action:
             self.delete_server()
 
-
     def edit_server(self):
-        dialog = EditServerDialog(self.name, self.ip, self.parent)
+        dialog = EditServerDialog(self.name, self.ip, self)
         if dialog.exec_() == QDialog.Accepted:
-            self.parent.update_server(self.name, dialog.name_input.text(), dialog.ip_input.text())
-
+            self.server_selector.update_server(self.name, dialog.name_input.text(), dialog.ip_input.text())
+            self.name = dialog.name_input.text()
+            self.setText(self.name)
 
     def delete_server(self):
         reply = QMessageBox.question(self, 'Confirm Delete', f"Are you sure you want to delete {self.name}?",
                                      QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
-            self.parent.delete_server(self.name)
+            self.server_selector.delete_server(self.name)
+            self.deleteLater()
