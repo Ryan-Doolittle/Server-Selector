@@ -27,7 +27,7 @@ To get started with ServerSelector, follow these simple steps:
    - Download the `ServerSelector.exe` file.
 
 2. **Installation**:
-   - Place `ServerSelector.exe` into your SPT (Server Performance Tool) root folder.
+   - Place `ServerSelector.exe` into your SPT root folder.
 
 3. **Running the Application**:
    - Double-click `ServerSelector.exe` to launch the application.
