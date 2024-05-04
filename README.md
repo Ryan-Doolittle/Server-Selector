@@ -13,6 +13,11 @@ ServerSelector is a user-friendly tool designed to help users visually identify 
 
 ---
 
+## Check Latest Release
+[v0.2.0](https://github.com/Ryan-Doolittle/Server-Selector/releases/tag/v0.2.0)
+
+---
+
 ## How it works
 
 - when clicking a server button the user/launcher/config is edited with the stored IP address, simple as that!
