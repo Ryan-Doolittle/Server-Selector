@@ -1,11 +1,9 @@
 import json
 import socket
 from PyQt5.QtWidgets import QPushButton, QMessageBox, QMenu, QDialog
-from PyQt5.QtCore import QTimer, QThread, Qt
+from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QFont
-import qdarktheme
 
-from ..utilities.worker import ServerCheckWorker
 
 from ..containers.edit_server import EditServerDialog
 
@@ -20,7 +18,8 @@ class ServerButton(QPushButton):
         self.setFont(QFont('Arial', 20))
         self.setMinimumHeight(100)
         self.active_thread = None
-
+        self.is_online = None
+        self.launch_thread()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.launch_thread)
         self.timer.start(10000)
@@ -37,7 +36,11 @@ class ServerButton(QPushButton):
         QTimer.singleShot(0, check_status)
 
     def update_button_color(self, is_online):
+        if self.is_online == is_online:
+            print(f"Skipping, No change in status")
+            return
         color = "#4CAF50" if is_online else "#FF6347"
+        self.is_online = is_online
         print(f"Updating color for {self.ip}: {color}")
         self.setStyleSheet(f"QPushButton {{background-color: {color} !important; color: white;}}")
         self.style().unpolish(self)

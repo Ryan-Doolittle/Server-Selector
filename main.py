@@ -15,7 +15,7 @@ from src.utilities.resource_path import resource_path
 class ServerSelector(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Server Selector 0.3.0')
+        self.setWindowTitle('Server Selector 1.0.0')
         self.setWindowIcon(QIcon(resource_path('img/penrose.png')))
         self.setMinimumSize(512, 768)
         self.servers = self.load_servers()
@@ -44,9 +44,11 @@ class ServerSelector(QMainWindow):
 
     def load_servers(self):
         try:
-            with open(resource_path('save/servers.json'), 'r') as file:
-                return json.load(file)
+            with open("servers.json", 'r') as file_in:
+                return json.load(file_in)
         except FileNotFoundError:
+            with open("servers.json", 'w') as file_init:
+                json.dump([], file_init)
             return []
 
     def load_server_buttons(self):
@@ -63,7 +65,7 @@ class ServerSelector(QMainWindow):
             self.scroll_layout.addWidget(ServerButton(new_server['name'], new_server['ip'], self))
 
     def save_servers(self):
-        with open(resource_path('save/servers.json'), 'w') as file:
+        with open("servers.json", 'w') as file:
             json.dump(self.servers, file, indent=2)
 
     def update_server(self, old_name, new_name, new_ip):
