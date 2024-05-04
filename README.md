@@ -9,7 +9,7 @@ ServerSelector is a user-friendly tool designed to help users visually identify 
 
 ## Key Feature
 
-- **Visual Server Status**: Quickly and visually detect if a server is active, with color-coded buttons indicating the status in real-time.
+- **Visual Server Status**: Quickly and visually detect if a server is active, with color-coded buttons indicating the status.
 
 ---
 
