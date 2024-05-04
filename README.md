@@ -3,7 +3,7 @@
 
 ## What is ServerSelector?
 
-ServerSelector is a user-friendly tool designed to help users visually identify the status of servers—showing at a glance whether each server is active or not. This application is ideal for network administrators, developers, or anyone who needs to monitor server availability easily.
+ServerSelector is a user-friendly tool designed to help users visually identify the status of servers—showing at a glance whether each server is active or not.
 
 ---
 
