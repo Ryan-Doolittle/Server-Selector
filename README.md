@@ -1,4 +1,4 @@
-![image](https://github.com/Ryan-Doolittle/Server-Selector/assets/165734671/3bf7bc39-13f1-4ce7-ba62-c074911c6c72)
+![image](https://github.com/Ryan-Doolittle/Server-Selector/assets/165734671/78af8d88-ae10-46d0-bb7b-169f7eb0dc0b)
 
 # About ServerSelector
 
