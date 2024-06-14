@@ -1,13 +1,10 @@
 import json
 import socket
-from PyQt5.QtWidgets import QPushButton, QMessageBox, QMenu, QDialog
+from PyQt5.QtWidgets import QPushButton, QMenu, QDialog, QMessageBox
 from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtGui import QFont
-
+from PyQt5.QtGui import QFont, QColor
 
 from ..containers.edit_server import EditServerDialog
-
-
 
 class ServerButton(QPushButton):
     def __init__(self, name, ip, server_selector, parent=None):
@@ -19,6 +16,7 @@ class ServerButton(QPushButton):
         self.setMinimumHeight(100)
         self.active_thread = None
         self.is_online = None
+        self.selected = False
         self.launch_thread()
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.launch_thread)
@@ -26,7 +24,6 @@ class ServerButton(QPushButton):
 
     def launch_thread(self):
         def check_status():
-            print(f"Checking status for: {self.ip}")
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.settimeout(1)
             result = sock.connect_ex((self.ip, 6969))
@@ -36,48 +33,72 @@ class ServerButton(QPushButton):
         QTimer.singleShot(0, check_status)
 
     def update_button_color(self, is_online):
-        if self.is_online == is_online:
-            print(f"Skipping, No change in status")
-            return
-        color = "#4CAF50" if is_online else "#FF6347"
         self.is_online = is_online
-        print(f"Updating color for {self.ip}: {color}")
+        if is_online:
+            base_color = QColor("#4CAF50")
+        else:
+            base_color = QColor("#FF6347")
+        
+        if self.selected:
+            color = base_color.darker(150).name()  # Darker tone
+            self.setText(f"> {self.name} <")
+        else:
+            color = base_color.name()
+            self.setText(self.name)
+
         self.setStyleSheet(f"QPushButton {{background-color: {color} !important; color: white;}}")
-        self.style().unpolish(self)
-        self.style().polish(self)
         self.update()
 
     def cleanup_thread(self):
-        print(f"Cleaning up thread for {self.ip}")
         self.active_thread = None
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
+            self.server_selector.select_server(self)
             self.modify_server_ip()
         elif event.button() == Qt.RightButton:
-            self.show_context_menu(event.pos())
+            self.handle_right_click(event.pos())
         else:
             super().mousePressEvent(event)
 
+    def select(self):
+        self.selected = True
+        self.update_button_color(self.is_online)
+
+    def deselect(self):
+        self.selected = False
+        self.update_button_color(self.is_online)
+
+    def handle_right_click(self, pos):
+        self.show_context_menu(pos)
+
     def modify_server_ip(self):
         """Modify the server IP in the config file."""
-        config_path = "user/launcher/config.json"  # Adjust path as necessary
+        config_path = "user/launcher/config.json"
         try:
             with open(config_path, 'r') as file:
                 config = json.load(file)
-            config['Server']['Name'] = self.name
-            config['Server']['Url'] = f"http://{self.ip}:6969"
+            
+            # Update the server information
+            if 'Server' in config and isinstance(config['Server'], dict):
+                config['Server']['Name'] = self.name
+                config['Server']['Url'] = f"http://{self.ip}:6969"
+            else:
+                raise ValueError("Invalid JSON structure: 'Server' key missing or not a dictionary")
             
             with open(config_path, 'w') as file:
                 json.dump(config, file, indent=4)
                 
             print(f"Updated config.json with {self.name} IP {self.ip}")
         except FileNotFoundError:
-            print(f"Config file not found at {config_path}")
+            error_message = f"Config file not found at {config_path}"
+            print(error_message)
         except json.JSONDecodeError:
-            print("Error decoding JSON from config file.")
+            error_message = "Error decoding JSON from config file."
+            print(error_message)
         except Exception as e:
-            print(f"An error occurred: {e}")
+            error_message = f"An error occurred: {e}"
+            print(error_message)
 
     def show_context_menu(self, pos):
         menu = QMenu(self)

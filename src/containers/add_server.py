@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import *
 
-from ..utilities.validate import is_valid_ip
+from ..utilities.validate import is_valid_ip_or_domain
 
 
 
@@ -32,7 +32,7 @@ class AddServerDialog(QDialog):
         server_name = self.name_input.text().strip()
         server_ip = self.ip_input.text().strip()
         if server_name and server_ip:
-            if is_valid_ip(server_ip):
+            if is_valid_ip_or_domain(server_ip):
                 self.server_name = server_name
                 self.server_ip = server_ip
                 self.accept()  # Only set attributes and accept if valid

@@ -2,7 +2,6 @@ import sys
 import json
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont
 from PyQt5.QtGui import QIcon
 import qdarktheme
 
@@ -10,15 +9,14 @@ from src.containers.add_server import AddServerDialog
 from src.containers.server_list import ServerButton
 from src.utilities.resource_path import resource_path
 
-
-
 class ServerSelector(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Server Selector 1.0.0')
+        self.setWindowTitle('Server Selector 1.1.0')
         self.setWindowIcon(QIcon(resource_path('img/penrose.png')))
         self.setMinimumSize(512, 768)
         self.servers = self.load_servers()
+        self.selected_button = None  # Track the selected button
         self.init_ui()
 
     def init_ui(self):
@@ -42,6 +40,9 @@ class ServerSelector(QMainWindow):
         central_widget.setLayout(layout)
         self.setCentralWidget(central_widget)
 
+        # Select the server marked as selected in servers.json
+        self.select_initial_server()
+
     def load_servers(self):
         try:
             with open("servers.json", 'r') as file_in:
@@ -55,11 +56,13 @@ class ServerSelector(QMainWindow):
         for server in self.servers:
             button = ServerButton(server['name'], server['ip'], self)
             self.scroll_layout.addWidget(button)
+            if server.get('selected', False):
+                self.selected_button = button
 
     def show_add_server_dialog(self):
         dialog = AddServerDialog(self)
         if dialog.exec_():
-            new_server = {'name': dialog.server_name, 'ip': dialog.server_ip}
+            new_server = {'name': dialog.server_name, 'ip': dialog.server_ip, 'selected': False}
             self.servers.append(new_server)
             self.save_servers()
             self.scroll_layout.addWidget(ServerButton(new_server['name'], new_server['ip'], self))
@@ -90,6 +93,29 @@ class ServerSelector(QMainWindow):
                 widget.deleteLater()
         self.load_server_buttons()
 
+    def select_server(self, server_button):
+        if self.selected_button:
+            self.selected_button.deselect()
+            # Update the JSON file to mark the previous server as not selected
+            for server in self.servers:
+                if server['name'] == self.selected_button.name:
+                    server['selected'] = False
+                    break
+
+        self.selected_button = server_button
+        self.selected_button.select()
+
+        # Update the JSON file to mark the current server as selected
+        for server in self.servers:
+            if server['name'] == self.selected_button.name:
+                server['selected'] = True
+                break
+
+        self.save_servers()
+
+    def select_initial_server(self):
+        if self.selected_button:
+            self.selected_button.select()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
