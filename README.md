@@ -15,7 +15,7 @@ ServerSelector is a user-friendly tool designed to help users visually identify 
 ---
 
 ## Check Latest Release
-[v1.0.0](https://github.com/Ryan-Doolittle/Server-Selector/releases/tag/v1.0.0)
+[v1.0.0](https://github.com/Ryan-Doolittle/Server-Selector/releases/tag/v1.1.0)
 
 ---
 
